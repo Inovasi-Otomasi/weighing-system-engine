@@ -25,6 +25,7 @@ class paho(threading.Thread):
         time.sleep(5)
 
     def close(self):
+        self.db.db_close()
         self.active = False
         # self.stopped.clear()
         print("[MQTT] Connection closed")

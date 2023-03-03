@@ -16,7 +16,7 @@ def get_th(hmi_id):
 
 
 def auto_update():
-    print('[PROGRAM] Auto update running')
+    # print('[PROGRAM] Auto update running')
     query = """select hmi.*,line.line_name,machine.machine_name,shift.shift_name,shift.shift_group,shift.shift_start,shift.shift_end,sku.sku_name,sku.target,sku.th_H,sku.th_L,pic.pic_name,pic.nik from hmi left join line on hmi.line_id=line.id 
     left join machine on hmi.machine_id=machine.id 
     left join shift on hmi.shift_id=shift.id 
@@ -65,7 +65,7 @@ def parsing(raw_string, hmi_id):
 
 
 def auto_shift():
-    print('[MYSQL] Update shift')
+    # print('[MYSQL] Update shift')
     query = """SELECT * FROM shift
     WHERE
         (shift_start < shift_end AND now() BETWEEN shift_start AND shift_end)
@@ -92,8 +92,8 @@ if __name__ == "__main__":
                     # parsing(STABLE, 2)
                     # parsing(UNSTABLE, 2)
                     auto_update()
-                    # auto_shift()
-                    time.sleep(1/50)
+                    auto_shift()
+                    time.sleep(1/2)
                 except KeyboardInterrupt:
                     print('[PROGRAM] Closed')
                     exit()

@@ -1,4 +1,4 @@
-import json
+# import json
 
 import paho.mqtt.client as mqtt
 import threading
@@ -31,7 +31,7 @@ class paho(threading.Thread):
 
     def parsing(self, raw_string, hmi_id):
         try:
-            self.db.db_connect()
+            # self.db.db_connect()
             print('[PROGRAM] Parsing')
             data = str(raw_string).split(' ')[0]
             stable = 1 if str(data).split(',')[0] == 'ST' else 0
@@ -42,6 +42,7 @@ class paho(threading.Thread):
             th_H = hmi['th_H']
             th_L = hmi['th_L']
             status = 'UNDER'
+            print(hmi)
             if weight >= th_L and weight <= th_H:
                 status = 'PASS'
             elif weight < th_L:
@@ -63,14 +64,14 @@ class paho(threading.Thread):
         except Exception as e:
             print("[MYSQL] Error reading data from MySQL table")
             print(e)
-        finally:
-            # if connection.is_connected():
-            self.db.db_close()
-            print("[MYSQL] connection is closed")
+        # finally:
+        #     # if connection.is_connected():
+        #     # self.db.db_close()
+        #     print("[MYSQL] connection is closed")
 
     def update_timeout(self, timeout, hmi_id):
         try:
-            self.db.db_connect()
+            # self.db.db_connect()
             query = "update hmi set timeout = %s where id =%s" % (
                 timeout, hmi_id)
             self.db.db_query(query)
@@ -80,10 +81,10 @@ class paho(threading.Thread):
         except Exception as e:
             print("[MYSQL] Error reading data from MySQL table")
             print(e)
-        finally:
-            # if connection.is_connected():
-            self.db.db_close()
-            print("[MYSQL] connection is closed")
+        # finally:
+        #     # if connection.is_connected():
+        #     # self.db.db_close()
+        #     print("[MYSQL] connection is closed")
 
     def is_json(self, json_str):
         try:
@@ -122,33 +123,39 @@ class paho(threading.Thread):
         self.client.on_publish = self.on_publish
         print("[MQTT] Connecting...")
         while self.active:
-            try:
-                nms_address = self.set_address
-                mqtt_user = self.mqtt_user
-                mqtt_pass = self.mqtt_pass
-                mqtt_port = self.mqtt_port
-                self.client.username_pw_set(
-                    username=mqtt_user, password=mqtt_pass)
-                connected = self.client.connect(nms_address, mqtt_port)
-                print(connected)
-                if connected == 0:
-                    self.rc = 0
-                    while self.rc == 0:
-                        self.rc = self.client.loop()
-                        self.mqtt_status = 1
-                        if nms_address != self.set_address or mqtt_user != self.mqtt_user or mqtt_pass != self.mqtt_pass or mqtt_port != self.mqtt_port:
-                            self.client.disconnect()
+            self.db.db_connect()
+            if self.db.db_status():
+                try:
+                    nms_address = self.set_address
+                    mqtt_user = self.mqtt_user
+                    mqtt_pass = self.mqtt_pass
+                    mqtt_port = self.mqtt_port
+                    self.client.username_pw_set(
+                        username=mqtt_user, password=mqtt_pass)
+                    connected = self.client.connect(nms_address, mqtt_port)
+                    print(connected)
+                    if connected == 0:
+                        self.rc = 0
+                        while self.rc == 0:
+                            self.rc = self.client.loop()
+                            self.mqtt_status = 1
+                            if nms_address != self.set_address or mqtt_user != self.mqtt_user or mqtt_pass != self.mqtt_pass or mqtt_port != self.mqtt_port:
+                                self.client.disconnect()
+                                print("[MQTT] Server disconnected")
+                                self.mqtt_status = 0
+                                time.sleep(1)
+                        if self.rc != 0:
                             print("[MQTT] Server disconnected")
                             self.mqtt_status = 0
                             time.sleep(1)
-                    if self.rc != 0:
-                        print("[MQTT] Server disconnected")
-                        self.mqtt_status = 0
-                        time.sleep(1)
-                    # break
-            except Exception as e:
-                print("[MQTT] Retrying to connect...")
-                print(e)
-                self.mqtt_status = 0
+                except Exception as e:
+                    print("[MQTT] Retrying to connect...")
+                    print(e)
+                    self.mqtt_status = 0
+                    time.sleep(1)
+                    continue
+            else:
+                print("[MYSQL] Retrying to connect...")
+                self.db.db_reconnect()
                 time.sleep(1)
-                continue
+            time.sleep(1/1000)

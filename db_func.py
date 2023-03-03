@@ -96,6 +96,12 @@ class MySql:
         # self.db,
         # self.cursor
 
+    def db_status(self):
+        return self.db.is_connected()
+
+    def db_reconnect(self):
+        self.db.reconnect(attempts=9999, delay=5)
+
     def db_connect(self):
         self.db = mysql.connector.connect(
             host=self.mysql_server, user=self.mysql_username, password=self.mysql_passwd, database=self.mysql_db, port=self.mysql_port)

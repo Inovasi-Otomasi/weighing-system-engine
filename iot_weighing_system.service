@@ -1,0 +1,15 @@
+#place it on /lib/systemd/system/
+ [Unit]
+ Description=oee
+ After=multi-user.target
+
+ [Service]
+ Type=idle
+ ExecStart=/usr/bin/python3 /home/ubuntu/oee_engine/oee.py
+ Restart=always    
+ RestartSec=1
+ KillMode=process
+
+ [Install]
+ WantedBy=multi-user.target
+

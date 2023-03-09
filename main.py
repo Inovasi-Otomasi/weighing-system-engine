@@ -91,9 +91,9 @@ if __name__ == "__main__":
                     # get from mqttt here
                     # parsing(STABLE, 2)
                     # parsing(UNSTABLE, 2)
-                    auto_update()
+                    # auto_update()
                     # auto_shift()
-                    time.sleep(1/50)
+                    time.sleep(1/2)
                 except KeyboardInterrupt:
                     print('[PROGRAM] Closed')
                     exit()

@@ -85,6 +85,23 @@ class paho(threading.Thread):
             self.db.db_close()
             print("[MYSQL] connection is closed")
 
+    def update_ip(self, ip, hmi_id):
+        try:
+            self.db.db_connect()
+            query = "update hmi set ip_address = '%s' where id =%s" % (
+                ip, hmi_id)
+            self.db.db_query(query)
+        except KeyboardInterrupt:
+            print("[PROGRAM] Forced Close")
+            exit()
+        except Exception as e:
+            print("[MYSQL] Error reading data from MySQL table")
+            print(e)
+        finally:
+            # if connection.is_connected():
+            self.db.db_close()
+            print("[MYSQL] connection is closed")
+
     def is_json(self, json_str):
         try:
             json_object = json.loads(json_str)
@@ -107,6 +124,9 @@ class paho(threading.Thread):
             elif (str(msg.topic) == "hmi/%s/timeout" % (i+1)):
                 message = str(msg.payload.decode("utf-8"))
                 self.update_timeout(message, i+1)
+            elif (str(msg.topic) == "hmi/%s/ip" % (i+1)):
+                message = str(msg.payload.decode("utf-8"))
+                self.update_ip(message, i+1)
 
     def on_subscribe(self, mqttc, obj, mid, granted_qos):
         print("[MQTT] Subscribed: " + str(mid) + " " + str(obj))
